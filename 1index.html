@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación Web Flor con Mensaje</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            flex-direction: column; /* Organiza elementos verticalmente */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #openButton {
+            background-color: white;
+            color: black;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+            /* position: absolute; Ya no es necesario absolute positioning */
+        }
+        #openButton:hover {
+            background-color: #ddd;
+        }
+        #animationCanvas {
+            display: none; /* Inicialmente oculto */
+            background-color: black;
+            /* Asegura que el canvas no empuje el texto hacia abajo mientras se dibuja */
+            position: absolute; 
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #loveText {
+            display: none; /* Inicialmente oculto */
+            color: white;
+            font-size: 1.5em;
+            text-align: center;
+            position: absolute;
+            bottom: 50px; /* Posicionado cerca del borde inferior */
+            width: 100%;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="openButton">ABREME</button>
+    <canvas id="animationCanvas"></canvas>
+    <div id="loveText">TE AMO MUCHO MI NIÑA HERMOSA</div>
+
+    <script>
+        const button = document.getElementById('openButton');
+        const canvas = document.getElementById('animationCanvas');
+        const loveText = document.getElementById('loveText');
+        const ctx = canvas.getContext('2d');
+
+        button.addEventListener('click', () => {
+            button.style.display = 'none';
+            canvas.style.display = 'block';
+            loveText.style.display = 'block'; // Muestra el texto al hacer clic
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            runAnimation();
+        });
+
+        function runAnimation() {
+            let h = 0;
+            const iterations = 195;
+            let i = 0;
+
+            let x = canvas.width / 2;
+            let y = canvas.height / 2;
+            let angle = 0;
+
+            function hsvToRgb(h, s, v) {
+                let r, g, b; const c = v * s; const tx = c * (1 - Math.abs((h * 6) % 2 - 1)); const m = v - c;
+                if (0 <= h && h < 1/6) { r = c, g = tx, b = 0; } else if (1/6 <= h && h < 2/6) { r = tx, g = c, b = 0; }
+                else if (2/6 <= h && h < 3/6) { r = 0, g = c, b = tx; } else if (3/6 <= h && h < 4/6) { r = 0, g = tx, b = c; }
+                else if (4/6 <= h && h < 5/6) { r = tx, g = 0, b = c; } else if (5/6 <= h && h < 1) { r = c, g = 0, b = tx; }
+                return `rgb(${(r + m) * 255}, ${(g + m) * 255}, ${(b + m) * 255})`;
+            }
+
+            function move(distance) {
+                const rad = angle * Math.PI / 180;
+                const newX = x + distance * Math.cos(rad);
+                const newY = y + distance * Math.sin(rad) * -1;
+                ctx.lineTo(newX, newY);
+                x = newX;
+                y = newY;
+            }
+
+            function turn(degrees) {
+                angle += degrees;
+            }
+
+            function circle(radius, extent) {
+                const totalAngleRad = (extent || 360) * Math.PI / 180;
+                const angleInc = Math.PI / 180 * (radius >= 0 ? 1 : -1);
+                const steps = Math.floor(Math.abs(totalAngleRad / angleInc));
+
+                for (let j = 0; j < steps; j++) {
+                    const chord = 2 * Math.abs(radius) * Math.sin(Math.abs(angleInc) / 2);
+                    move(chord);
+                    turn(angleInc * 180 / Math.PI);
+                }
+            }
+
+
+            function animate() {
+                if (i >= iterations) return;
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+
+                const color = hsvToRgb(h, 0.9, 1);
+                h += 0.006;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+
+                turn(179);
+                move(-(i * 0.1));
+                circle(i * 0.3, 120);
+                turn(-14);
+                move(i * 0.1);
+                circle(i * 0.3, 120);
+
+                ctx.stroke();
+
+                i++;
+                setTimeout(animate, 20);
+            }
+
+            animate();
+        }
+    </script>
+
+</body>
+</html>
